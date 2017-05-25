@@ -1,4 +1,4 @@
-// = Requirements ================================================================
+//  Requirements
 	var express = require('express');
 	var app = express();
 	var bodyParser = require('body-parser');
@@ -7,14 +7,14 @@
 	var request = require('request');
 	var cheerio = require('cheerio');
 
-// = Middleware (pass everything through the logger first) ================================================
+// Middleware (pass everything through the logger first) 
 	app.use(logger('dev'));
 	app.use(bodyParser.urlencoded({
 		extended: false
 	}));
 	app.use(express.static('public')); // (create a public folder and land there)
 
-// = Database configuration ================================================
+// Database configuration 
 	mongoose.connect('mongodb://heroku_cf8wm7hl:ob9n5plkmtckjal3f2gm9b65bj@ds151941.mlab.com:51941/heroku_cf8wm7hl');
 	var db = mongoose.connection;
 
@@ -25,25 +25,26 @@
 		console.log('Mongoose connection successful.');
 	});
 
-// = Require Schemas ================================================================
+// Require Schemas 
 	var Note = require('./models/comments.js');
 	var Article = require('./models/articles.js');
 
-// = Routes ================================================================
+//  Routes
 	app.get('/', function(req, res) {
-	  res.send(index.html); // sending the html file rather than rendering a handlebars file
+	  res.send(index.html); 
 	});
 
+// Scrapes the site
 app.get('/scrape', function(req, res) {
   request('http://www.reddit.com/', function(error, response, html) {
     var $ = cheerio.load(html);
     $('article h2').each(function(i, element) {
-
+    		// Puts articles in an array
 				var result = {};
 
 				result.title = $(this).children('a').text();
 				result.link = $(this).children('a').attr('href');
-
+			// Save entry into db
 				var entry = new Article (result);
 
 				entry.save(function(err, doc) {
@@ -60,7 +61,7 @@ app.get('/scrape', function(req, res) {
   res.send("Scrape Complete");
 });
 
-
+// Get articles
 app.get('/articles', function(req, res){
 	Article.find({}, function(err, doc){
 		if (err){
@@ -71,7 +72,7 @@ app.get('/articles', function(req, res){
 	});
 });
 
-
+// Get aritcles by id
 app.get('/articles/:id', function(req, res){
 	Article.findOne({'_id': req.params.id})
 	.populate('note')
@@ -84,7 +85,7 @@ app.get('/articles/:id', function(req, res){
 	});
 });
 
-
+// Posting a new note on the article
 app.post('/articles/:id', function(req, res){
 	var newNote = new Note(req.body);
 
@@ -112,6 +113,6 @@ app.post('/articles/:id', function(req, res){
 
 
 
-app.listen(3000, function() {
-  console.log('App running on port 3000!');
+app.listen(process.env.PORT, function() {
+  console.log('App running on port ' + process.env.PORT);
 });

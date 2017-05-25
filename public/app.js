@@ -4,11 +4,11 @@ $.getJSON('/articles', function(data) {
   }
 });
 
-
+// On click for notes
 $(document).on('click', 'p', function(){
   $('#notes').empty();
   var thisId = $(this).attr('data-id');
-
+// Get request for notes
   $.ajax({
     method: "GET",
     url: "/articles/" + thisId,
@@ -27,9 +27,10 @@ $(document).on('click', 'p', function(){
     });
 });
 
+// On click to save a note
 $(document).on('click', '#savenote', function(){
   var thisId = $(this).attr('data-id');
-
+// Post request to post a note
   $.ajax({
     method: "POST",
     url: "/articles/" + thisId,
